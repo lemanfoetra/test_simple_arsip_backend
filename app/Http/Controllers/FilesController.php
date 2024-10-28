@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Arsip;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -19,6 +20,12 @@ class FilesController extends Controller
                 ->where('id_arsips', $parrent)
                 ->orderBy('tipe', 'ASC')
                 ->get();
+            foreach ($files as $key => $value) {
+                $files[$key]->url = $value->name_origin;
+                if ($value->tipe == '2') {
+                    $files[$key]->url = url('arsip/download/' . Crypt::encrypt($value->id));
+                }
+            }
 
             return response()->json([
                 'success'   => true,
@@ -124,9 +131,19 @@ class FilesController extends Controller
     }
 
 
-    public function delete($id)
+    public function delete($parrent, $id)
     {
         try {
+            $old =  DB::table('arsips')
+                ->where('id', $id)
+                ->first();
+
+            if (!empty($old) && $old->tipe == '2') {
+                if (Storage::exists($old->name_origin)) {
+                    Storage::delete($old->name_origin);
+                }
+            }
+
             DB::table('arsips')
                 ->where('id', $id)
                 ->limit(1)
@@ -135,7 +152,7 @@ class FilesController extends Controller
             return response()->json([
                 'success'   => true,
                 'message'   => 'success',
-                'data'      => [],
+                'data'      => [$old],
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -145,5 +162,17 @@ class FilesController extends Controller
                 'data'          => [],
             ], 500);
         }
+    }
+
+
+    public function download($enc_id)
+    {
+        $id = Crypt::decrypt($enc_id);
+        $arsip = DB::table('arsips')
+            ->where('id', $id)
+            ->first();
+
+        return response()->file('../storage/app/' . $arsip->name_origin);
+        // return Storage::download($materi->path_materi);
     }
 }

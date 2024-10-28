@@ -154,18 +154,15 @@ class ArsipController extends Controller
 
         foreach ($results as $result) {
             if ($this->haveChild($result->id)) {
-
-                $data2 = array_merge($data, [[
+                $data = array_merge($data, [[
                     'id'            => $result->id,
                     'id_arsips'     => $result->id_arsips,
                     'level'         => $this->levelFolder($result->id),
                     'tipe'          => $result->tipe,
                     'name_display'  => $result->name_display,
+                    'parrent'       => $parrent,
                 ]]);
-                $folders = $this->listAllFolder($result->id, $data);
-
-                $data = array_merge($data, $data2);
-                $data = array_merge($data, $folders);
+                $data = $this->listAllFolder($result->id, $data);
             } else {
                 $data = array_merge($data, [[
                     'id'            => $result->id,
@@ -173,6 +170,7 @@ class ArsipController extends Controller
                     'level'         => $this->levelFolder($result->id),
                     'tipe'          => $result->tipe,
                     'name_display'  => $result->name_display,
+                    'parrent'       => $parrent,
                 ]]);
             }
         }

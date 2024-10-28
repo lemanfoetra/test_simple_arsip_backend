@@ -124,5 +124,6 @@ Route::middleware(['auth:sanctum', 'check.token.expiration'])->group(function ()
         Route::get('/{parrent}', [FilesController::class, 'index'])->middleware("api.role:arsip_file_get_list");
         Route::post('/{parrent}', [FilesController::class, 'store'])->middleware("api.role:arsip_file_post");
         Route::delete('/{parrent}/{id}', [FilesController::class, 'delete'])->middleware("api.role:arsip_file_delete");
+        Route::get('download/{parrent}', [FilesController::class, 'index'])->middleware("api.role:arsip_file_get_list");
     });
 });
